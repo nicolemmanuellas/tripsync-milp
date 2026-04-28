@@ -19,7 +19,7 @@ TripSync is a prescriptive analytics solution that generates **personalised, opt
 
 ## Live Demo
 
-🗺️ **[View Interactive Map](tripsync_map.html)** — 60 attractions across 4 Dutch cities, with optimised Day 1–5 routes plotted from a real model run.
+🗺️ **[View Interactive Map](https://nicolemmanuellas.github.io/tripsync-milp/)** — 60 attractions across 4 Dutch cities, with optimised Day 1–5 routes plotted from a real model run.
 
 ---
 

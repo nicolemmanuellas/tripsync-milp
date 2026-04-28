@@ -1,2561 +1,360 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    
-            <meta name="viewport" content="width=device-width,
-                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-            <style>
-                #map_973f6f491dfecf0d3ad7c1b4fbc4eb09 {
-                    position: relative;
-                    width: 100.0%;
-                    height: 100.0%;
-                    left: 0.0%;
-                    top: 0.0%;
-                }
-                .leaflet-container { font-size: 1rem; }
-            </style>
-
-            <style>html, body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            </style>
-
-            <style>#map {
-                position:absolute;
-                top:0;
-                bottom:0;
-                right:0;
-                left:0;
-                }
-            </style>
-
-            <script>
-                L_NO_TOUCH = false;
-                L_DISABLE_3D = false;
-            </script>
-
-        
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TripSync — MILP Itinerary Optimiser</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root {
+  --ink: #1a1714;
+  --cream: #f5f0e8;
+  --warm: #e8dfd0;
+  --sand: #d4c9b5;
+  --accent: #c0392b;
+  --accent2: #2c5f8a;
+  --gold: #b8860b;
+  --success: #2d6a4f;
+  --text2: #5a5248;
+  --text3: #9c9088;
+  --card: #faf7f2;
+  --border: #ddd5c5;
+  --r: 6px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+.header{background:var(--ink);color:var(--cream);padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Playfair Display',serif;font-size:22px;letter-spacing:0.5px}
+.logo span{color:#c0a060}
+.tagline{font-size:12px;color:#9c9080;font-weight:300;letter-spacing:1px;text-transform:uppercase}
+.badge{background:#c0392b;color:white;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:500;letter-spacing:0.5px}
+.app{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 65px)}
+.panel{background:var(--card);border-right:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 65px)}
+.section{padding:20px 22px;border-bottom:1px solid var(--border)}
+.section-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title .num{background:var(--ink);color:var(--cream);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;flex-shrink:0}
+label{font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px;letter-spacing:0.3px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0}
+.range-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:-2px}
+select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:white;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none}
+select:focus{border-color:var(--accent2)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px}
+.attr-card{border:1.5px solid var(--border);border-radius:var(--r);padding:9px 10px;cursor:pointer;transition:all 0.15s;background:white;position:relative}
+.attr-card:hover{border-color:var(--accent2);background:#f0f5fa}
+.attr-card.selected{border-color:var(--accent);background:#fdf5f5}
+.attr-card.must{border-color:var(--gold);background:#fdf8e8}
+.attr-name{font-size:12px;font-weight:500;color:var(--ink);line-height:1.3;margin-bottom:4px}
+.attr-meta{font-size:10px;color:var(--text3);display:flex;gap:6px;align-items:center}
+.score-pip{display:inline-flex;gap:1px}
+.pip{width:5px;height:5px;border-radius:1px;background:var(--border)}
+.pip.on{background:var(--gold)}
+.must-tag{font-size:9px;background:var(--gold);color:white;padding:1px 5px;border-radius:3px;position:absolute;top:5px;right:5px;font-weight:500}
+.sel-tag{font-size:9px;background:var(--accent);color:white;padding:1px 5px;border-radius:3px;position:absolute;top:5px;right:5px;font-weight:500}
+.select-all-row{display:flex;gap:6px;margin-bottom:8px}
+.mini-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--text2);font-family:'DM Sans',sans-serif}
+.mini-btn:hover{background:var(--warm)}
+.acc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.acc-row label{margin:0;white-space:nowrap;min-width:90px}
+.acc-row input[type=number]{width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:'DM Sans',sans-serif;outline:none}
+.acc-row input:focus{border-color:var(--accent2)}
+.criteria-list{display:flex;flex-direction:column;gap:5px}
+.crit-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:white;border:1px solid var(--border);border-radius:var(--r);cursor:grab;font-size:12px}
+.crit-rank{background:var(--ink);color:var(--cream);width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.drag-handle{color:var(--text3);font-size:14px}
+.run-btn{width:100%;padding:14px;background:var(--ink);color:var(--cream);border:none;border-radius:var(--r);font-family:'Playfair Display',serif;font-size:16px;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;margin-top:2px}
+.run-btn:hover{background:#2d2520;transform:translateY(-1px)}
+.run-btn:active{transform:translateY(0)}
+.main-area{display:flex;flex-direction:column}
+#map{flex:1;min-height:420px}
+.results{background:var(--cream);padding:24px 28px;border-top:1px solid var(--border)}
+.results-header{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px}
+.score-row{display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.score-chip{background:white;border:1px solid var(--border);border-radius:var(--r);padding:8px 14px;text-align:center}
+.score-chip .n{font-family:'Playfair Display',serif;font-size:22px;color:var(--accent);font-weight:600}
+.score-chip .l{font-size:11px;color:var(--text3);margin-top:1px}
+.day-section{margin-bottom:18px}
+.day-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.day-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:600;flex-shrink:0}
+.day-title{font-weight:500;font-size:14px}
+.timeline{display:flex;flex-direction:column;gap:6px;margin-left:14px;padding-left:24px;border-left:1.5px solid var(--border)}
+.timeline-item{background:white;border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:-28px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--border)}
+.timeline-item.home::before{background:var(--ink)}
+.timeline-item.visit::before{background:var(--accent)}
+.tl-time{font-size:11px;color:var(--text3);margin-bottom:2px;font-weight:500}
+.tl-name{font-size:13px;font-weight:500}
+.tl-meta{font-size:11px;color:var(--text2);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
+.tl-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:500}
+.badge-must{background:#fdf3cd;color:var(--gold);border:1px solid #e8d080}
+.acc-result{background:white;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-top:18px}
+.acc-result-title{font-family:'Playfair Display',serif;font-size:15px;margin-bottom:10px;color:var(--ink)}
+.acc-name{font-size:14px;font-weight:500;margin-bottom:6px}
+.acc-criteria-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.crit-badge{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:500}
+.crit-ok{background:#d4edda;color:var(--success);border:1px solid #a8d5b5}
+.acc-stats{display:flex;gap:14px;font-size:12px;color:var(--text2)}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.5}
+.empty-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:8px}
+.empty-sub{font-size:13px;line-height:1.6}
+@media(max-width:768px){
+  .app{grid-template-columns:1fr}
+  .panel{max-height:none}
+  #map{min-height:300px}
+}
+</style>
 </head>
 <body>
-    
-    
-<div style="position:fixed;bottom:30px;left:30px;z-index:1000;
-     background:white;padding:14px 18px;border-radius:10px;
-     border:1px solid #e5e7eb;font-family:sans-serif;font-size:13px;
-     box-shadow:0 2px 8px rgba(0,0,0,0.1)">
-    <div style="font-weight:600;margin-bottom:8px;font-size:14px">TripSync — MILP Optimiser</div>
-    <div style="color:#6b7280;font-size:11px;margin-bottom:10px">Emmanuella Nicole · NTU BC2411</div>
-    <div style="margin-bottom:6px"><span style="color:#2563eb">●</span> Amsterdam attractions</div>
-    <div style="margin-bottom:6px"><span style="color:#dc2626">●</span> Rotterdam attractions</div>
-    <div style="margin-bottom:6px"><span style="color:#16a34a">●</span> Utrecht attractions</div>
-    <div style="margin-bottom:6px"><span style="color:#9333ea">●</span> Haarlem attractions</div>
-    <div style="margin-bottom:6px"><span style="color:#f59e0b">●</span> Top-rated Airbnbs</div>
-    <div style="margin-bottom:6px"><span style="color:#000">⌂</span> Airbnb base</div>
-    <hr style="margin:8px 0;border-color:#f3f4f6">
-    <div style="font-size:11px;color:#6b7280;margin-bottom:2px">Optimised routes (Amsterdam):</div>
-    <div style="font-size:11px"><span style="color:#ef4444">—</span> Day 1 &nbsp;
-    <span style="color:#f97316">—</span> Day 2 &nbsp;
-    <span style="color:#eab308">—</span> Day 3</div>
-    <div style="font-size:11px"><span style="color:#22c55e">—</span> Day 4 &nbsp;
-    <span style="color:#8b5cf6">—</span> Day 5</div>
-    <div style="margin-top:8px;font-size:11px;color:#9ca3af">Dot size = satisfaction score</div>
+<div class="header">
+  <div>
+    <div class="logo">Trip<span>Sync</span></div>
+    <div class="tagline">MILP-Powered Itinerary Optimiser · Amsterdam</div>
+  </div>
+  <div class="badge">NTU BC2411 · Emmanuella Nicole</div>
 </div>
-    
-            <div class="folium-map" id="map_973f6f491dfecf0d3ad7c1b4fbc4eb09" ></div>
-        
-</body>
+
+<div class="app">
+  <div class="panel">
+    <div class="section">
+      <div class="section-title"><span class="num">1</span> Trip Details</div>
+      <div class="row2" style="margin-bottom:12px">
+        <div>
+          <label>Number of Days</label>
+          <select id="numDays">
+            <option value="1">1 day</option>
+            <option value="2">2 days</option>
+            <option value="3" selected>3 days</option>
+            <option value="4">4 days</option>
+            <option value="5">5 days</option>
+          </select>
+        </div>
+        <div>
+          <label>Group Size (pax)</label>
+          <input type="number" id="pax" value="2" min="1" max="8" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
+        </div>
+      </div>
+      <label>Daily Available Hours: <span id="hoursVal" style="font-weight:600;color:var(--accent)">8h</span></label>
+      <input type="range" id="dailyHours" min="4" max="12" value="8" step="1">
+      <div class="range-row"><span>4h</span><span>8h</span><span>12h</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">2</span> Select Attractions</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5">
+        Click to <span style="color:var(--accent);font-weight:500">select</span>. Double-click to mark as <span style="color:var(--gold);font-weight:500">must-visit</span> (priority = 5).
+      </div>
+      <div class="select-all-row">
+        <button class="mini-btn" onclick="selectAll()">Select all</button>
+        <button class="mini-btn" onclick="clearAll()">Clear all</button>
+      </div>
+      <div class="attr-grid" id="attrGrid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="num">3</span> Accommodation Criteria</div>
+      <div class="acc-row"><label>Min Airbnb Rating</label><input type="number" id="minRating" value="7" min="1" max="10" step="0.5"></div>
+      <div class="acc-row"><label>Min Host Rating</label><input type="number" id="minHost" value="7" min="1" max="10" step="0.5"></div>
+      <div class="acc-row"><label>Max Distance (km)</label><input type="number" id="maxDist" value="3" min="0.5" max="10" step="0.5"></div>
+      <div style="margin-top:12px">
+        <label style="margin-bottom:8px">Rank criteria by importance (drag to reorder)</label>
+        <div class="criteria-list" id="criteriaList">
+          <div class="crit-item" draggable="true" data-crit="rating"><div style="display:flex;align-items:center;gap:8px"><span class="crit-rank">1</span><span>Airbnb Rating</span></div><span class="drag-handle">⋮⋮</span></div>
+          <div class="crit-item" draggable="true" data-crit="host"><div style="display:flex;align-items:center;gap:8px"><span class="crit-rank">2</span><span>Host Rating</span></div><span class="drag-handle">⋮⋮</span></div>
+          <div class="crit-item" draggable="true" data-crit="distance"><div style="display:flex;align-items:center;gap:8px"><span class="crit-rank">3</span><span>Distance to Attractions</span></div><span class="drag-handle">⋮⋮</span></div>
+          <div class="crit-item" draggable="true" data-crit="capacity"><div style="display:flex;align-items:center;gap:8px"><span class="crit-rank">4</span><span>Capacity</span></div><span class="drag-handle">⋮⋮</span></div>
+          <div class="crit-item" draggable="true" data-crit="minstay"><div style="display:flex;align-items:center;gap:8px"><span class="crit-rank">5</span><span>Stay Duration</span></div><span class="drag-handle">⋮⋮</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="border-bottom:none">
+      <button class="run-btn" id="runBtn" onclick="runOptimiser()">✦ Optimise My Itinerary</button>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Satisfaction-weighted greedy algorithm with time-window constraints</div>
+    </div>
+  </div>
+
+  <div class="main-area">
+    <div id="map"></div>
+    <div id="resultsArea">
+      <div class="empty-state">
+        <div class="empty-icon">🗺</div>
+        <div class="empty-title">Your optimised itinerary will appear here</div>
+        <div class="empty-sub">Select attractions, set your preferences,<br>and click Optimise to generate your trip plan.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-    
-    
-            var map_973f6f491dfecf0d3ad7c1b4fbc4eb09 = L.map(
-                "map_973f6f491dfecf0d3ad7c1b4fbc4eb09",
-                {
-                    center: [52.1, 4.85],
-                    crs: L.CRS.EPSG3857,
-                    ...{
-  "zoom": 9,
-  "zoomControl": true,
-  "preferCanvas": false,
-}
-
-                }
-            );
-
-            
-
-        
-    
-            var tile_layer_c5fb30315f196ba156d48c45be0751e3 = L.tileLayer(
-                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-                {
-  "minZoom": 0,
-  "maxZoom": 20,
-  "maxNativeZoom": 20,
-  "noWrap": false,
-  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
-  "subdomains": "abcd",
-  "detectRetina": false,
-  "tms": false,
-  "opacity": 1,
-}
-
-            );
-        
-    
-            tile_layer_c5fb30315f196ba156d48c45be0751e3.addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            var circle_marker_43388dcb94f4a5d84432e83bae8799be = L.circleMarker(
-                [52.359998, 4.885219],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_7df5b4037d4042c44590cc94cbd9e45d = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_00fe2c519f73c26f6ecc66d68f0133db = $(`<div id="html_00fe2c519f73c26f6ecc66d68f0133db" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Rijksmuseum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_7df5b4037d4042c44590cc94cbd9e45d.setContent(html_00fe2c519f73c26f6ecc66d68f0133db);
-            
-        
-
-        circle_marker_43388dcb94f4a5d84432e83bae8799be.bindPopup(popup_7df5b4037d4042c44590cc94cbd9e45d)
-        ;
-
-        
-    
-    
-            circle_marker_43388dcb94f4a5d84432e83bae8799be.bindTooltip(
-                `<div>
-                     Rijksmuseum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_d8977068e0f30b1c871a2586e8ea39da = L.circleMarker(
-                [52.358416, 4.881076],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_0daf1ad48fa93b29787f236de83c1dac = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_f1e53ef0a49f45e97c09154bff6f056e = $(`<div id="html_f1e53ef0a49f45e97c09154bff6f056e" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Van Gogh Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 9pm             </div>         </div>`)[0];
-                popup_0daf1ad48fa93b29787f236de83c1dac.setContent(html_f1e53ef0a49f45e97c09154bff6f056e);
-            
-        
-
-        circle_marker_d8977068e0f30b1c871a2586e8ea39da.bindPopup(popup_0daf1ad48fa93b29787f236de83c1dac)
-        ;
-
-        
-    
-    
-            circle_marker_d8977068e0f30b1c871a2586e8ea39da.bindTooltip(
-                `<div>
-                     Van Gogh Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_ddf04dcef0548110f38f7779aaa7a71c = L.circleMarker(
-                [52.375218, 4.883977],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_5f879d09086510476fa29a40f2a699e9 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_72c4fdf376bdd047622159dec9df53a4 = $(`<div id="html_72c4fdf376bdd047622159dec9df53a4" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Anne Frank House</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 6pm              </div>         </div>`)[0];
-                popup_5f879d09086510476fa29a40f2a699e9.setContent(html_72c4fdf376bdd047622159dec9df53a4);
-            
-        
-
-        circle_marker_ddf04dcef0548110f38f7779aaa7a71c.bindPopup(popup_5f879d09086510476fa29a40f2a699e9)
-        ;
-
-        
-    
-    
-            circle_marker_ddf04dcef0548110f38f7779aaa7a71c.bindTooltip(
-                `<div>
-                     Anne Frank House
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_1a03ed074b3ae821849ecdcf0b19161b = L.circleMarker(
-                [52.358412, 4.868389],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_958816df1c4f0c51fbffb776eecc2322 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_7a079f759b9a301a1e6890017f5a3579 = $(`<div id="html_7a079f759b9a301a1e6890017f5a3579" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Vondelpark</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_958816df1c4f0c51fbffb776eecc2322.setContent(html_7a079f759b9a301a1e6890017f5a3579);
-            
-        
-
-        circle_marker_1a03ed074b3ae821849ecdcf0b19161b.bindPopup(popup_958816df1c4f0c51fbffb776eecc2322)
-        ;
-
-        
-    
-    
-            circle_marker_1a03ed074b3ae821849ecdcf0b19161b.bindTooltip(
-                `<div>
-                     Vondelpark
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_d3f5a66c95a50cc319f8843ad744a41c = L.circleMarker(
-                [52.373154, 4.892226],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_381cce75d9ea29b80432cc3d99116382 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_2faa25d99d8be00933c032201c58d541 = $(`<div id="html_2faa25d99d8be00933c032201c58d541" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Dam Square</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 5pm             </div>         </div>`)[0];
-                popup_381cce75d9ea29b80432cc3d99116382.setContent(html_2faa25d99d8be00933c032201c58d541);
-            
-        
-
-        circle_marker_d3f5a66c95a50cc319f8843ad744a41c.bindPopup(popup_381cce75d9ea29b80432cc3d99116382)
-        ;
-
-        
-    
-    
-            circle_marker_d3f5a66c95a50cc319f8843ad744a41c.bindTooltip(
-                `<div>
-                     Dam Square
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_2968a72cb449ed239eeaba4e46670622 = L.circleMarker(
-                [52.373189, 4.89107],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_c2a8eff9acc7027614cc97c4f7ff3714 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_e17e5f4cc6931af956db9a96c75765a3 = $(`<div id="html_e17e5f4cc6931af956db9a96c75765a3" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Royal Palace Amsterdam</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_c2a8eff9acc7027614cc97c4f7ff3714.setContent(html_e17e5f4cc6931af956db9a96c75765a3);
-            
-        
-
-        circle_marker_2968a72cb449ed239eeaba4e46670622.bindPopup(popup_c2a8eff9acc7027614cc97c4f7ff3714)
-        ;
-
-        
-    
-    
-            circle_marker_2968a72cb449ed239eeaba4e46670622.bindTooltip(
-                `<div>
-                     Royal Palace Amsterdam
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_d1f2c9f94967dab92be6459aecb8c3c7 = L.circleMarker(
-                [52.357994, 4.891529],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_c52629d24b46a6027c7b3eea2ac57003 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_2623ebdc0cff7dc07e67870ac4061238 = $(`<div id="html_2623ebdc0cff7dc07e67870ac4061238" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Heineken Experience</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_c52629d24b46a6027c7b3eea2ac57003.setContent(html_2623ebdc0cff7dc07e67870ac4061238);
-            
-        
-
-        circle_marker_d1f2c9f94967dab92be6459aecb8c3c7.bindPopup(popup_c52629d24b46a6027c7b3eea2ac57003)
-        ;
-
-        
-    
-    
-            circle_marker_d1f2c9f94967dab92be6459aecb8c3c7.bindTooltip(
-                `<div>
-                     Heineken Experience
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_96e859c1af1184634ec66aae64a8c16c = L.circleMarker(
-                [52.369377, 4.901599],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_758c55b608772db8e5260b9c82b397b9 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_72dec3d9d8913d3453f3fbd04a7a2130 = $(`<div id="html_72dec3d9d8913d3453f3fbd04a7a2130" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Rembrandt House Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_758c55b608772db8e5260b9c82b397b9.setContent(html_72dec3d9d8913d3453f3fbd04a7a2130);
-            
-        
-
-        circle_marker_96e859c1af1184634ec66aae64a8c16c.bindPopup(popup_758c55b608772db8e5260b9c82b397b9)
-        ;
-
-        
-    
-    
-            circle_marker_96e859c1af1184634ec66aae64a8c16c.bindTooltip(
-                `<div>
-                     Rembrandt House Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_f96daa15a8d2900f5124cc151738e41d = L.circleMarker(
-                [52.374027, 4.912003],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_0e2f245e800e9eedea90a678562a47aa = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_c4b94a6b8111884f0eadb21b5212f8e9 = $(`<div id="html_c4b94a6b8111884f0eadb21b5212f8e9" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>NEMO Science Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_0e2f245e800e9eedea90a678562a47aa.setContent(html_c4b94a6b8111884f0eadb21b5212f8e9);
-            
-        
-
-        circle_marker_f96daa15a8d2900f5124cc151738e41d.bindPopup(popup_0e2f245e800e9eedea90a678562a47aa)
-        ;
-
-        
-    
-    
-            circle_marker_f96daa15a8d2900f5124cc151738e41d.bindTooltip(
-                `<div>
-                     NEMO Science Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_a5a83ec6b1b2e6161ce663ff8fc102eb = L.circleMarker(
-                [52.366837, 4.914733],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_be77f0b643f92e5d39efc55ed87b0022 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_984dd7cf95cc85f5e09f9436167c46f9 = $(`<div id="html_984dd7cf95cc85f5e09f9436167c46f9" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>ARTIS Zoo</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10pm - 6pm             </div>         </div>`)[0];
-                popup_be77f0b643f92e5d39efc55ed87b0022.setContent(html_984dd7cf95cc85f5e09f9436167c46f9);
-            
-        
-
-        circle_marker_a5a83ec6b1b2e6161ce663ff8fc102eb.bindPopup(popup_be77f0b643f92e5d39efc55ed87b0022)
-        ;
-
-        
-    
-    
-            circle_marker_a5a83ec6b1b2e6161ce663ff8fc102eb.bindTooltip(
-                `<div>
-                     ARTIS Zoo
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_86101fd81d3f4caf78043aa1442a8700 = L.circleMarker(
-                [52.384186, 4.900437],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_9f7f0ffec1b7b01535c208cf3b7959ab = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_6bd87c84815eded0bc488b964ae8c310 = $(`<div id="html_6bd87c84815eded0bc488b964ae8c310" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>A’DAM Lookout</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 8pm             </div>         </div>`)[0];
-                popup_9f7f0ffec1b7b01535c208cf3b7959ab.setContent(html_6bd87c84815eded0bc488b964ae8c310);
-            
-        
-
-        circle_marker_86101fd81d3f4caf78043aa1442a8700.bindPopup(popup_9f7f0ffec1b7b01535c208cf3b7959ab)
-        ;
-
-        
-    
-    
-            circle_marker_86101fd81d3f4caf78043aa1442a8700.bindTooltip(
-                `<div>
-                     A’DAM Lookout
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_862767269ff7be0516bbdb4a926ae2b3 = L.circleMarker(
-                [52.37187, 4.88919],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_6e4cda117c65748e51cef6f68b0f8d99 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_58751bcfc3525aa7f2fe4be5c89079eb = $(`<div id="html_58751bcfc3525aa7f2fe4be5c89079eb" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Amsterdam Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_6e4cda117c65748e51cef6f68b0f8d99.setContent(html_58751bcfc3525aa7f2fe4be5c89079eb);
-            
-        
-
-        circle_marker_862767269ff7be0516bbdb4a926ae2b3.bindPopup(popup_6e4cda117c65748e51cef6f68b0f8d99)
-        ;
-
-        
-    
-    
-            circle_marker_862767269ff7be0516bbdb4a926ae2b3.bindTooltip(
-                `<div>
-                     Amsterdam Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_03ac1e37bec8cd7fc70fe426fd0fad06 = L.circleMarker(
-                [52.365726, 4.891205],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_00c3109019ec2ded083de7cdc635d823 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_5746aba06a73a28d0a09c1c78e934dc0 = $(`<div id="html_5746aba06a73a28d0a09c1c78e934dc0" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Bloemenmarkt</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 11am - 9pm             </div>         </div>`)[0];
-                popup_00c3109019ec2ded083de7cdc635d823.setContent(html_5746aba06a73a28d0a09c1c78e934dc0);
-            
-        
-
-        circle_marker_03ac1e37bec8cd7fc70fe426fd0fad06.bindPopup(popup_00c3109019ec2ded083de7cdc635d823)
-        ;
-
-        
-    
-    
-            circle_marker_03ac1e37bec8cd7fc70fe426fd0fad06.bindTooltip(
-                `<div>
-                     Bloemenmarkt
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_081feba88255a694b5505a4274cde64d = L.circleMarker(
-                [52.358906, 4.881975],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_288aa7d22dfcb7c8e5349cc44efafe23 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_41eab8f32d26ac8652e53cfffd400ed7 = $(`<div id="html_41eab8f32d26ac8652e53cfffd400ed7" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Moco Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_288aa7d22dfcb7c8e5349cc44efafe23.setContent(html_41eab8f32d26ac8652e53cfffd400ed7);
-            
-        
-
-        circle_marker_081feba88255a694b5505a4274cde64d.bindPopup(popup_288aa7d22dfcb7c8e5349cc44efafe23)
-        ;
-
-        
-    
-    
-            circle_marker_081feba88255a694b5505a4274cde64d.bindTooltip(
-                `<div>
-                     Moco Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_31312321f26f5b5aa5a8d26e8341658e = L.circleMarker(
-                [52.384793, 4.900991],
-                {"bubblingMouseEvents": true, "color": "#2563eb", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#2563eb", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_f291331626c6944f9cbfff60c7c5d8c6 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_b90492628be61fa310699c4059a57e95 = $(`<div id="html_b90492628be61fa310699c4059a57e95" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#2563eb'>Eye Filmmuseum</b><br>                 <span style='color:#6b7280;font-size:12px'>Amsterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_f291331626c6944f9cbfff60c7c5d8c6.setContent(html_b90492628be61fa310699c4059a57e95);
-            
-        
-
-        circle_marker_31312321f26f5b5aa5a8d26e8341658e.bindPopup(popup_f291331626c6944f9cbfff60c7c5d8c6)
-        ;
-
-        
-    
-    
-            circle_marker_31312321f26f5b5aa5a8d26e8341658e.bindTooltip(
-                `<div>
-                     Eye Filmmuseum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_6f657f4c2e4436a136ad066b423f6ade = L.circleMarker(
-                [51.9057, 4.4669],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_ab8fdfc8d1e76284380bd0685eb31cb8 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_ce9088b0da0519fea6c49dc63acee38a = $(`<div id="html_ce9088b0da0519fea6c49dc63acee38a" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Euromast</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_ab8fdfc8d1e76284380bd0685eb31cb8.setContent(html_ce9088b0da0519fea6c49dc63acee38a);
-            
-        
-
-        circle_marker_6f657f4c2e4436a136ad066b423f6ade.bindPopup(popup_ab8fdfc8d1e76284380bd0685eb31cb8)
-        ;
-
-        
-    
-    
-            circle_marker_6f657f4c2e4436a136ad066b423f6ade.bindTooltip(
-                `<div>
-                     Euromast
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_1d8a3d4652c994808d9c1a2c4b07bd0c = L.circleMarker(
-                [51.9194, 4.488],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_1cf685841f2b8f65b371771e1ba3843c = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_6dd911b61e7de82968643b3e786ffbd7 = $(`<div id="html_6dd911b61e7de82968643b3e786ffbd7" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Markthal</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 9pm             </div>         </div>`)[0];
-                popup_1cf685841f2b8f65b371771e1ba3843c.setContent(html_6dd911b61e7de82968643b3e786ffbd7);
-            
-        
-
-        circle_marker_1d8a3d4652c994808d9c1a2c4b07bd0c.bindPopup(popup_1cf685841f2b8f65b371771e1ba3843c)
-        ;
-
-        
-    
-    
-            circle_marker_1d8a3d4652c994808d9c1a2c4b07bd0c.bindTooltip(
-                `<div>
-                     Markthal
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_a597ea567a1120ab2af45c80b618c29b = L.circleMarker(
-                [51.919, 4.4891],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_f45362c33e5b681e47c65c36344b8db3 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_90a4c861e2f7ca9f2d84ecaba6a477a6 = $(`<div id="html_90a4c861e2f7ca9f2d84ecaba6a477a6" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Cube Houses</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 6pm              </div>         </div>`)[0];
-                popup_f45362c33e5b681e47c65c36344b8db3.setContent(html_90a4c861e2f7ca9f2d84ecaba6a477a6);
-            
-        
-
-        circle_marker_a597ea567a1120ab2af45c80b618c29b.bindPopup(popup_f45362c33e5b681e47c65c36344b8db3)
-        ;
-
-        
-    
-    
-            circle_marker_a597ea567a1120ab2af45c80b618c29b.bindTooltip(
-                `<div>
-                     Cube Houses
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_57a7f07e1cf27e04b72832df30d18fc4 = L.circleMarker(
-                [51.9141, 4.4734],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_3666a1c3ab9ce9e2967e4f09350c6d81 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_aba2945e58dc3c7352cb9c6a518c5f33 = $(`<div id="html_aba2945e58dc3c7352cb9c6a518c5f33" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Boijmans Van Beuningen</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_3666a1c3ab9ce9e2967e4f09350c6d81.setContent(html_aba2945e58dc3c7352cb9c6a518c5f33);
-            
-        
-
-        circle_marker_57a7f07e1cf27e04b72832df30d18fc4.bindPopup(popup_3666a1c3ab9ce9e2967e4f09350c6d81)
-        ;
-
-        
-    
-    
-            circle_marker_57a7f07e1cf27e04b72832df30d18fc4.bindTooltip(
-                `<div>
-                     Boijmans Van Beuningen
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_5cf25780946366a65e5c92bb8acf9e46 = L.circleMarker(
-                [51.909, 4.4861],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_82249093b17881331ed4a23188741c3c = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_6e1494a307179af9ebe858bef109cb88 = $(`<div id="html_6e1494a307179af9ebe858bef109cb88" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Erasmus Bridge</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 5pm             </div>         </div>`)[0];
-                popup_82249093b17881331ed4a23188741c3c.setContent(html_6e1494a307179af9ebe858bef109cb88);
-            
-        
-
-        circle_marker_5cf25780946366a65e5c92bb8acf9e46.bindPopup(popup_82249093b17881331ed4a23188741c3c)
-        ;
-
-        
-    
-    
-            circle_marker_5cf25780946366a65e5c92bb8acf9e46.bindTooltip(
-                `<div>
-                     Erasmus Bridge
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_da47f1b3e3e63db1c82e2d8b7bd8068c = L.circleMarker(
-                [51.9282, 4.4482],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_78e65c8297770919cacd7cf7f959c04a = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_4df80e85addb7b830e9a7c192c4092d0 = $(`<div id="html_4df80e85addb7b830e9a7c192c4092d0" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Diergaarde Blijdorp</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_78e65c8297770919cacd7cf7f959c04a.setContent(html_4df80e85addb7b830e9a7c192c4092d0);
-            
-        
-
-        circle_marker_da47f1b3e3e63db1c82e2d8b7bd8068c.bindPopup(popup_78e65c8297770919cacd7cf7f959c04a)
-        ;
-
-        
-    
-    
-            circle_marker_da47f1b3e3e63db1c82e2d8b7bd8068c.bindTooltip(
-                `<div>
-                     Diergaarde Blijdorp
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_f1f584027d0036f93aeeec0434feaa40 = L.circleMarker(
-                [51.9173, 4.4842],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_48b74d3d595bd556bc2fd8d1b5b296fc = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_910cf81e7c96b55db1b3226d3cac3e87 = $(`<div id="html_910cf81e7c96b55db1b3226d3cac3e87" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Maritime Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_48b74d3d595bd556bc2fd8d1b5b296fc.setContent(html_910cf81e7c96b55db1b3226d3cac3e87);
-            
-        
-
-        circle_marker_f1f584027d0036f93aeeec0434feaa40.bindPopup(popup_48b74d3d595bd556bc2fd8d1b5b296fc)
-        ;
-
-        
-    
-    
-            circle_marker_f1f584027d0036f93aeeec0434feaa40.bindTooltip(
-                `<div>
-                     Maritime Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_be934eeb4e1841b8838decc04f02bad7 = L.circleMarker(
-                [51.9111, 4.4729],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_5b2e64f98799e395286612f13296d29e = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_121e98a6f428e3d5aa6bcc69b3c3fd9b = $(`<div id="html_121e98a6f428e3d5aa6bcc69b3c3fd9b" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Kunsthal</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_5b2e64f98799e395286612f13296d29e.setContent(html_121e98a6f428e3d5aa6bcc69b3c3fd9b);
-            
-        
-
-        circle_marker_be934eeb4e1841b8838decc04f02bad7.bindPopup(popup_5b2e64f98799e395286612f13296d29e)
-        ;
-
-        
-    
-    
-            circle_marker_be934eeb4e1841b8838decc04f02bad7.bindTooltip(
-                `<div>
-                     Kunsthal
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_46a9ebc0d8be51f939c4362500b9e6ef = L.circleMarker(
-                [51.9005, 4.4484],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_77ab032f7ad42d24d2a5aa6c64c3066a = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_1fd9d2165fbbe3e5b5b988caa0f6d287 = $(`<div id="html_1fd9d2165fbbe3e5b5b988caa0f6d287" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>SS Rotterdam</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_77ab032f7ad42d24d2a5aa6c64c3066a.setContent(html_1fd9d2165fbbe3e5b5b988caa0f6d287);
-            
-        
-
-        circle_marker_46a9ebc0d8be51f939c4362500b9e6ef.bindPopup(popup_77ab032f7ad42d24d2a5aa6c64c3066a)
-        ;
-
-        
-    
-    
-            circle_marker_46a9ebc0d8be51f939c4362500b9e6ef.bindTooltip(
-                `<div>
-                     SS Rotterdam
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_7fcd18d86bcbf73d6c04aaa1bc8e913c = L.circleMarker(
-                [51.9147, 4.4774],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_d797dd8121c0cce1e0ba0e5d1c512900 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_579651d77bc624d712c19a2aa590ea04 = $(`<div id="html_579651d77bc624d712c19a2aa590ea04" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Witte de Withstraat</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10pm - 6pm             </div>         </div>`)[0];
-                popup_d797dd8121c0cce1e0ba0e5d1c512900.setContent(html_579651d77bc624d712c19a2aa590ea04);
-            
-        
-
-        circle_marker_7fcd18d86bcbf73d6c04aaa1bc8e913c.bindPopup(popup_d797dd8121c0cce1e0ba0e5d1c512900)
-        ;
-
-        
-    
-    
-            circle_marker_7fcd18d86bcbf73d6c04aaa1bc8e913c.bindTooltip(
-                `<div>
-                     Witte de Withstraat
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_3da2362ad7ae04606646b5ab7466bc56 = L.circleMarker(
-                [51.9244, 4.4699],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_700b0565fe7b20b38a8b433789f62420 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_30127c8eff7a25c179bae1412de5675d = $(`<div id="html_30127c8eff7a25c179bae1412de5675d" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Rotterdam Central Station</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 8pm             </div>         </div>`)[0];
-                popup_700b0565fe7b20b38a8b433789f62420.setContent(html_30127c8eff7a25c179bae1412de5675d);
-            
-        
-
-        circle_marker_3da2362ad7ae04606646b5ab7466bc56.bindPopup(popup_700b0565fe7b20b38a8b433789f62420)
-        ;
-
-        
-    
-    
-            circle_marker_3da2362ad7ae04606646b5ab7466bc56.bindTooltip(
-                `<div>
-                     Rotterdam Central Station
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_88a4f9a06714cde4d0c17dab29f8516c = L.circleMarker(
-                [51.9228, 4.4685],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_962925c681943ac91592f2a55585c526 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_93f7a619ad73e5cc02c5d9a8d940f3ec = $(`<div id="html_93f7a619ad73e5cc02c5d9a8d940f3ec" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Miniworld Rotterdam</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_962925c681943ac91592f2a55585c526.setContent(html_93f7a619ad73e5cc02c5d9a8d940f3ec);
-            
-        
-
-        circle_marker_88a4f9a06714cde4d0c17dab29f8516c.bindPopup(popup_962925c681943ac91592f2a55585c526)
-        ;
-
-        
-    
-    
-            circle_marker_88a4f9a06714cde4d0c17dab29f8516c.bindTooltip(
-                `<div>
-                     Miniworld Rotterdam
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_a5bd5c27e5f37351fd6f1beb2a258dda = L.circleMarker(
-                [51.9247, 4.4816],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_b5762a1add454a986353254f15842a1a = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_d7850313e1baadfcab6409de5fb605ba = $(`<div id="html_d7850313e1baadfcab6409de5fb605ba" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Luchtsingel</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 11am - 9pm             </div>         </div>`)[0];
-                popup_b5762a1add454a986353254f15842a1a.setContent(html_d7850313e1baadfcab6409de5fb605ba);
-            
-        
-
-        circle_marker_a5bd5c27e5f37351fd6f1beb2a258dda.bindPopup(popup_b5762a1add454a986353254f15842a1a)
-        ;
-
-        
-    
-    
-            circle_marker_a5bd5c27e5f37351fd6f1beb2a258dda.bindTooltip(
-                `<div>
-                     Luchtsingel
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_a380748c9a1da80d4a9cc6e536ad7304 = L.circleMarker(
-                [51.9052, 4.4815],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_91917ed1f1357b67bd3dd45b7b27e774 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_170e4d87e1f676d09dc863cdb3099a18 = $(`<div id="html_170e4d87e1f676d09dc863cdb3099a18" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Fenix Food Factory</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_91917ed1f1357b67bd3dd45b7b27e774.setContent(html_170e4d87e1f676d09dc863cdb3099a18);
-            
-        
-
-        circle_marker_a380748c9a1da80d4a9cc6e536ad7304.bindPopup(popup_91917ed1f1357b67bd3dd45b7b27e774)
-        ;
-
-        
-    
-    
-            circle_marker_a380748c9a1da80d4a9cc6e536ad7304.bindTooltip(
-                `<div>
-                     Fenix Food Factory
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_c1bf706dc0881ab1adb3a149f0e0bdd1 = L.circleMarker(
-                [51.9188, 4.4916],
-                {"bubblingMouseEvents": true, "color": "#dc2626", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#dc2626", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_96e4adb3cc994b9b140a97f13b57d847 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_fa310f107e714dcd7f37e3128493951b = $(`<div id="html_fa310f107e714dcd7f37e3128493951b" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#dc2626'>Oude Haven</b><br>                 <span style='color:#6b7280;font-size:12px'>Rotterdam</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_96e4adb3cc994b9b140a97f13b57d847.setContent(html_fa310f107e714dcd7f37e3128493951b);
-            
-        
-
-        circle_marker_c1bf706dc0881ab1adb3a149f0e0bdd1.bindPopup(popup_96e4adb3cc994b9b140a97f13b57d847)
-        ;
-
-        
-    
-    
-            circle_marker_c1bf706dc0881ab1adb3a149f0e0bdd1.bindTooltip(
-                `<div>
-                     Oude Haven
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_12209397fe3f2cbbdebcd959a4fc1fbc = L.circleMarker(
-                [52.0908, 5.1214],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_bc451452162f624603a7713b3be5444b = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_5943d4e246fc8a127f5cacc6d0ef74be = $(`<div id="html_5943d4e246fc8a127f5cacc6d0ef74be" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Dom Tower</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_bc451452162f624603a7713b3be5444b.setContent(html_5943d4e246fc8a127f5cacc6d0ef74be);
-            
-        
-
-        circle_marker_12209397fe3f2cbbdebcd959a4fc1fbc.bindPopup(popup_bc451452162f624603a7713b3be5444b)
-        ;
-
-        
-    
-    
-            circle_marker_12209397fe3f2cbbdebcd959a4fc1fbc.bindTooltip(
-                `<div>
-                     Dom Tower
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_bc1ce18ff0f169c7f05d98233b4f8610 = L.circleMarker(
-                [52.0901, 5.1215],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_1787cf717d6b251de10c22bbe0ba4c06 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_8a28303d8e04bb2ae8a2b0e585e27655 = $(`<div id="html_8a28303d8e04bb2ae8a2b0e585e27655" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Museum Speelklok</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 9pm             </div>         </div>`)[0];
-                popup_1787cf717d6b251de10c22bbe0ba4c06.setContent(html_8a28303d8e04bb2ae8a2b0e585e27655);
-            
-        
-
-        circle_marker_bc1ce18ff0f169c7f05d98233b4f8610.bindPopup(popup_1787cf717d6b251de10c22bbe0ba4c06)
-        ;
-
-        
-    
-    
-            circle_marker_bc1ce18ff0f169c7f05d98233b4f8610.bindTooltip(
-                `<div>
-                     Museum Speelklok
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_e60e0ff9cfa79711a1133ff614f18472 = L.circleMarker(
-                [52.0844, 5.1242],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_89251edddf29485ca147b01cfcdfb00d = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_4b55b0a30d9944c274c154e66675c33e = $(`<div id="html_4b55b0a30d9944c274c154e66675c33e" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Centraal Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 6pm              </div>         </div>`)[0];
-                popup_89251edddf29485ca147b01cfcdfb00d.setContent(html_4b55b0a30d9944c274c154e66675c33e);
-            
-        
-
-        circle_marker_e60e0ff9cfa79711a1133ff614f18472.bindPopup(popup_89251edddf29485ca147b01cfcdfb00d)
-        ;
-
-        
-    
-    
-            circle_marker_e60e0ff9cfa79711a1133ff614f18472.bindTooltip(
-                `<div>
-                     Centraal Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_0f7e5dbf30d1b1bddca14baed4eb4386 = L.circleMarker(
-                [52.0886, 5.1314],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_3afe15febb3c5c0ffbb6e7b1d677ce3f = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_d5ed71cadc43eaf86232e9fef4afb0ea = $(`<div id="html_d5ed71cadc43eaf86232e9fef4afb0ea" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Railway Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_3afe15febb3c5c0ffbb6e7b1d677ce3f.setContent(html_d5ed71cadc43eaf86232e9fef4afb0ea);
-            
-        
-
-        circle_marker_0f7e5dbf30d1b1bddca14baed4eb4386.bindPopup(popup_3afe15febb3c5c0ffbb6e7b1d677ce3f)
-        ;
-
-        
-    
-    
-            circle_marker_0f7e5dbf30d1b1bddca14baed4eb4386.bindTooltip(
-                `<div>
-                     Railway Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_74b6694ae1a979260c365be0ab0edac6 = L.circleMarker(
-                [52.0907, 5.12],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_ca85ca70bdcf5fe5d54a11eb76077367 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_1702d69e2e24a1587d4af1f1b0b246c7 = $(`<div id="html_1702d69e2e24a1587d4af1f1b0b246c7" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Oudegracht</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 5pm             </div>         </div>`)[0];
-                popup_ca85ca70bdcf5fe5d54a11eb76077367.setContent(html_1702d69e2e24a1587d4af1f1b0b246c7);
-            
-        
-
-        circle_marker_74b6694ae1a979260c365be0ab0edac6.bindPopup(popup_ca85ca70bdcf5fe5d54a11eb76077367)
-        ;
-
-        
-    
-    
-            circle_marker_74b6694ae1a979260c365be0ab0edac6.bindTooltip(
-                `<div>
-                     Oudegracht
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_c8c7373474cbcad085ab3625413c47d6 = L.circleMarker(
-                [52.0864, 5.1725],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_6a41d2f797b88876041c43af8cd5e916 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_f50e0a8171d1aee24992ad66bc5644a4 = $(`<div id="html_f50e0a8171d1aee24992ad66bc5644a4" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Botanic Gardens</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_6a41d2f797b88876041c43af8cd5e916.setContent(html_f50e0a8171d1aee24992ad66bc5644a4);
-            
-        
-
-        circle_marker_c8c7373474cbcad085ab3625413c47d6.bindPopup(popup_6a41d2f797b88876041c43af8cd5e916)
-        ;
-
-        
-    
-    
-            circle_marker_c8c7373474cbcad085ab3625413c47d6.bindTooltip(
-                `<div>
-                     Botanic Gardens
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_477e2aa16807598db5e6aa5c6651a6da = L.circleMarker(
-                [52.0865, 5.1347],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_9d28523d1c2a2b4851d45517e3a31d60 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_0e03e0f8827320e0a2fcbe2212553f96 = $(`<div id="html_0e03e0f8827320e0a2fcbe2212553f96" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Wilhelminapark</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_9d28523d1c2a2b4851d45517e3a31d60.setContent(html_0e03e0f8827320e0a2fcbe2212553f96);
-            
-        
-
-        circle_marker_477e2aa16807598db5e6aa5c6651a6da.bindPopup(popup_9d28523d1c2a2b4851d45517e3a31d60)
-        ;
-
-        
-    
-    
-            circle_marker_477e2aa16807598db5e6aa5c6651a6da.bindTooltip(
-                `<div>
-                     Wilhelminapark
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_25829e8f89477d064376df983d1cabcf = L.circleMarker(
-                [52.0854, 5.1463],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_9713cc6d0ed2ef1c7065c812487442b2 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_1098598351d614743d14cf4cf8a17e8c = $(`<div id="html_1098598351d614743d14cf4cf8a17e8c" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Rietveld Schröder House</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_9713cc6d0ed2ef1c7065c812487442b2.setContent(html_1098598351d614743d14cf4cf8a17e8c);
-            
-        
-
-        circle_marker_25829e8f89477d064376df983d1cabcf.bindPopup(popup_9713cc6d0ed2ef1c7065c812487442b2)
-        ;
-
-        
-    
-    
-            circle_marker_25829e8f89477d064376df983d1cabcf.bindTooltip(
-                `<div>
-                     Rietveld Schröder House
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_b9891ee8c3f54efbc0a04546a244d49f = L.circleMarker(
-                [52.0908, 5.1216],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_b067993e97b8e05e4a58493a7197ea7e = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_7b0d5076358efba49115e7dd385d030e = $(`<div id="html_7b0d5076358efba49115e7dd385d030e" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>DOMunder</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_b067993e97b8e05e4a58493a7197ea7e.setContent(html_7b0d5076358efba49115e7dd385d030e);
-            
-        
-
-        circle_marker_b9891ee8c3f54efbc0a04546a244d49f.bindPopup(popup_b067993e97b8e05e4a58493a7197ea7e)
-        ;
-
-        
-    
-    
-            circle_marker_b9891ee8c3f54efbc0a04546a244d49f.bindTooltip(
-                `<div>
-                     DOMunder
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_60840365ae20b60bcb7c3cc85ab22b7e = L.circleMarker(
-                [52.0821, 5.1239],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_bed9550e68424b4ab9394c45baac649a = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_b4dc9afbd2ee373b58fe3115fd0b0117 = $(`<div id="html_b4dc9afbd2ee373b58fe3115fd0b0117" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>University Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10pm - 6pm             </div>         </div>`)[0];
-                popup_bed9550e68424b4ab9394c45baac649a.setContent(html_b4dc9afbd2ee373b58fe3115fd0b0117);
-            
-        
-
-        circle_marker_60840365ae20b60bcb7c3cc85ab22b7e.bindPopup(popup_bed9550e68424b4ab9394c45baac649a)
-        ;
-
-        
-    
-    
-            circle_marker_60840365ae20b60bcb7c3cc85ab22b7e.bindTooltip(
-                `<div>
-                     University Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_4140495bac770c062e661035037f9167 = L.circleMarker(
-                [52.0128, 5.4514],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_5d66d41e0d1c90d0026d10afe1d53b07 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_a126156d5fc734d6cfc6afb6225ca748 = $(`<div id="html_a126156d5fc734d6cfc6afb6225ca748" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Utrechtse Heuvelrug</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 8pm             </div>         </div>`)[0];
-                popup_5d66d41e0d1c90d0026d10afe1d53b07.setContent(html_a126156d5fc734d6cfc6afb6225ca748);
-            
-        
-
-        circle_marker_4140495bac770c062e661035037f9167.bindPopup(popup_5d66d41e0d1c90d0026d10afe1d53b07)
-        ;
-
-        
-    
-    
-            circle_marker_4140495bac770c062e661035037f9167.bindTooltip(
-                `<div>
-                     Utrechtse Heuvelrug
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_e61c1ed579cd832134da640e8b2a35c8 = L.circleMarker(
-                [52.0952, 5.1109],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_eb2fff24471266408348f00de5a37c18 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_fe678896b420678c25290e64623efc2f = $(`<div id="html_fe678896b420678c25290e64623efc2f" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>TivoliVredenburg</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_eb2fff24471266408348f00de5a37c18.setContent(html_fe678896b420678c25290e64623efc2f);
-            
-        
-
-        circle_marker_e61c1ed579cd832134da640e8b2a35c8.bindPopup(popup_eb2fff24471266408348f00de5a37c18)
-        ;
-
-        
-    
-    
-            circle_marker_e61c1ed579cd832134da640e8b2a35c8.bindTooltip(
-                `<div>
-                     TivoliVredenburg
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_c45edcef615a9cddf89b719c245bb943 = L.circleMarker(
-                [52.0715, 5.0374],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_f4ab3243b583213eccf3c9aca5ce44d6 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_efd20f11a7963174b0b1d292e9e4bc3a = $(`<div id="html_efd20f11a7963174b0b1d292e9e4bc3a" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Hoge Woerd Castellum</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 11am - 9pm             </div>         </div>`)[0];
-                popup_f4ab3243b583213eccf3c9aca5ce44d6.setContent(html_efd20f11a7963174b0b1d292e9e4bc3a);
-            
-        
-
-        circle_marker_c45edcef615a9cddf89b719c245bb943.bindPopup(popup_f4ab3243b583213eccf3c9aca5ce44d6)
-        ;
-
-        
-    
-    
-            circle_marker_c45edcef615a9cddf89b719c245bb943.bindTooltip(
-                `<div>
-                     Hoge Woerd Castellum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_23f12adacfd81ae866913e6e2f09a1b9 = L.circleMarker(
-                [52.0967, 5.123],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_7d8284538c219ef194b63bc0dae52dc4 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_161141871e62bce40c0ef96c34d78b23 = $(`<div id="html_161141871e62bce40c0ef96c34d78b23" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Griftpark</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_7d8284538c219ef194b63bc0dae52dc4.setContent(html_161141871e62bce40c0ef96c34d78b23);
-            
-        
-
-        circle_marker_23f12adacfd81ae866913e6e2f09a1b9.bindPopup(popup_7d8284538c219ef194b63bc0dae52dc4)
-        ;
-
-        
-    
-    
-            circle_marker_23f12adacfd81ae866913e6e2f09a1b9.bindTooltip(
-                `<div>
-                     Griftpark
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_115cc99ea1857a74fcb302a19dbccb41 = L.circleMarker(
-                [52.0843, 5.1223],
-                {"bubblingMouseEvents": true, "color": "#16a34a", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#16a34a", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_a26547a7864eae03b080a3478ca4bde5 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_485c88d0eef2e914d82f8d165bda2c1e = $(`<div id="html_485c88d0eef2e914d82f8d165bda2c1e" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#16a34a'>Miffy Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Utrecht</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_a26547a7864eae03b080a3478ca4bde5.setContent(html_485c88d0eef2e914d82f8d165bda2c1e);
-            
-        
-
-        circle_marker_115cc99ea1857a74fcb302a19dbccb41.bindPopup(popup_a26547a7864eae03b080a3478ca4bde5)
-        ;
-
-        
-    
-    
-            circle_marker_115cc99ea1857a74fcb302a19dbccb41.bindTooltip(
-                `<div>
-                     Miffy Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_4be20b3310eb48ccb1414bcdf90504b6 = L.circleMarker(
-                [52.3808, 4.6368],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_fe4a24c8207b67677604fa293b3b02e9 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_9205ec4da6e31ef9fd3269236edc9cca = $(`<div id="html_9205ec4da6e31ef9fd3269236edc9cca" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Frans Hals Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_fe4a24c8207b67677604fa293b3b02e9.setContent(html_9205ec4da6e31ef9fd3269236edc9cca);
-            
-        
-
-        circle_marker_4be20b3310eb48ccb1414bcdf90504b6.bindPopup(popup_fe4a24c8207b67677604fa293b3b02e9)
-        ;
-
-        
-    
-    
-            circle_marker_4be20b3310eb48ccb1414bcdf90504b6.bindTooltip(
-                `<div>
-                     Frans Hals Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_3b273c06d0607409bac5f9dd51ce1d12 = L.circleMarker(
-                [52.3813, 4.6386],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_c15537d38482ae3cdbfed6c821140628 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_33766ed3a76dc30055ffdfb28558fd80 = $(`<div id="html_33766ed3a76dc30055ffdfb28558fd80" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Teylers Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 9pm             </div>         </div>`)[0];
-                popup_c15537d38482ae3cdbfed6c821140628.setContent(html_33766ed3a76dc30055ffdfb28558fd80);
-            
-        
-
-        circle_marker_3b273c06d0607409bac5f9dd51ce1d12.bindPopup(popup_c15537d38482ae3cdbfed6c821140628)
-        ;
-
-        
-    
-    
-            circle_marker_3b273c06d0607409bac5f9dd51ce1d12.bindTooltip(
-                `<div>
-                     Teylers Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_fb42988ee698244816a6afc5d779ca13 = L.circleMarker(
-                [52.381, 4.6339],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_f12d06959c66986fa62cb418746f2929 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_4c12bdd4df7f6a989643eeffe6e12fa8 = $(`<div id="html_4c12bdd4df7f6a989643eeffe6e12fa8" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Grote Kerk</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 6pm              </div>         </div>`)[0];
-                popup_f12d06959c66986fa62cb418746f2929.setContent(html_4c12bdd4df7f6a989643eeffe6e12fa8);
-            
-        
-
-        circle_marker_fb42988ee698244816a6afc5d779ca13.bindPopup(popup_f12d06959c66986fa62cb418746f2929)
-        ;
-
-        
-    
-    
-            circle_marker_fb42988ee698244816a6afc5d779ca13.bindTooltip(
-                `<div>
-                     Grote Kerk
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_c98c894a8f7dd275fa3eb0f94db6e1ee = L.circleMarker(
-                [52.3809, 4.6322],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_a94376645a422a9a31e739137087a8d0 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_c650fe6e0222fedca49c8ab4285ed235 = $(`<div id="html_c650fe6e0222fedca49c8ab4285ed235" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Corrie ten Boom House</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_a94376645a422a9a31e739137087a8d0.setContent(html_c650fe6e0222fedca49c8ab4285ed235);
-            
-        
-
-        circle_marker_c98c894a8f7dd275fa3eb0f94db6e1ee.bindPopup(popup_a94376645a422a9a31e739137087a8d0)
-        ;
-
-        
-    
-    
-            circle_marker_c98c894a8f7dd275fa3eb0f94db6e1ee.bindTooltip(
-                `<div>
-                     Corrie ten Boom House
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_d73a8c910721a0a38bb465f758b1a1db = L.circleMarker(
-                [52.3841, 4.6332],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_059d0e1734d98f627e95c577575ffb6b = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_d1496d707e446c6495619b37ae5f4e79 = $(`<div id="html_d1496d707e446c6495619b37ae5f4e79" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>De Adriaan Windmill</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 5pm             </div>         </div>`)[0];
-                popup_059d0e1734d98f627e95c577575ffb6b.setContent(html_d1496d707e446c6495619b37ae5f4e79);
-            
-        
-
-        circle_marker_d73a8c910721a0a38bb465f758b1a1db.bindPopup(popup_059d0e1734d98f627e95c577575ffb6b)
-        ;
-
-        
-    
-    
-            circle_marker_d73a8c910721a0a38bb465f758b1a1db.bindTooltip(
-                `<div>
-                     De Adriaan Windmill
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_154fc6bcf127cad09615f9b73dbd4210 = L.circleMarker(
-                [52.3724, 4.6273],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_3039f8939cfcdaab49020308a62ae644 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_3f792792eec0408767037eba30443dd6 = $(`<div id="html_3f792792eec0408767037eba30443dd6" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Haarlemmerhout Park</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 10pm             </div>         </div>`)[0];
-                popup_3039f8939cfcdaab49020308a62ae644.setContent(html_3f792792eec0408767037eba30443dd6);
-            
-        
-
-        circle_marker_154fc6bcf127cad09615f9b73dbd4210.bindPopup(popup_3039f8939cfcdaab49020308a62ae644)
-        ;
-
-        
-    
-    
-            circle_marker_154fc6bcf127cad09615f9b73dbd4210.bindTooltip(
-                `<div>
-                     Haarlemmerhout Park
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_3413594b48aaeccae962ceed00754a0a = L.circleMarker(
-                [52.3764, 4.6274],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_64a4225b4be45222da251b4c81205c7b = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_f890b1d8f3e20451bd722d22ec9a4dfe = $(`<div id="html_f890b1d8f3e20451bd722d22ec9a4dfe" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Cathedral of Saint Bavo</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_64a4225b4be45222da251b4c81205c7b.setContent(html_f890b1d8f3e20451bd722d22ec9a4dfe);
-            
-        
-
-        circle_marker_3413594b48aaeccae962ceed00754a0a.bindPopup(popup_64a4225b4be45222da251b4c81205c7b)
-        ;
-
-        
-    
-    
-            circle_marker_3413594b48aaeccae962ceed00754a0a.bindTooltip(
-                `<div>
-                     Cathedral of Saint Bavo
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_fa4a6bb2b061ffda9e32c80fcb9d23b2 = L.circleMarker(
-                [52.3816, 4.6314],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 10, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_fea7df4d7bc16b3acd4f3993196d545e = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_0aa7ab55584b5caaf7e56bb683c46508 = $(`<div id="html_0aa7ab55584b5caaf7e56bb683c46508" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Jopenkerk</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 4/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_fea7df4d7bc16b3acd4f3993196d545e.setContent(html_0aa7ab55584b5caaf7e56bb683c46508);
-            
-        
-
-        circle_marker_fa4a6bb2b061ffda9e32c80fcb9d23b2.bindPopup(popup_fea7df4d7bc16b3acd4f3993196d545e)
-        ;
-
-        
-    
-    
-            circle_marker_fa4a6bb2b061ffda9e32c80fcb9d23b2.bindTooltip(
-                `<div>
-                     Jopenkerk
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_cff22e5c8410890d9f89f6921db913c5 = L.circleMarker(
-                [52.3812, 4.6345],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_517d735604b9cd7f8acfc1f3aa436e4e = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_5cca8710f0e78539935be05029ae49c6 = $(`<div id="html_5cca8710f0e78539935be05029ae49c6" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Archeological Museum</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_517d735604b9cd7f8acfc1f3aa436e4e.setContent(html_5cca8710f0e78539935be05029ae49c6);
-            
-        
-
-        circle_marker_cff22e5c8410890d9f89f6921db913c5.bindPopup(popup_517d735604b9cd7f8acfc1f3aa436e4e)
-        ;
-
-        
-    
-    
-            circle_marker_cff22e5c8410890d9f89f6921db913c5.bindTooltip(
-                `<div>
-                     Archeological Museum
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_72939298051c465113be62c252b29aa2 = L.circleMarker(
-                [52.3873, 4.6432],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 9, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_bf31df2d5bd3dcd748fbbd0e48406492 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_4a81727acd63f579389e993dadf6cca8 = $(`<div id="html_4a81727acd63f579389e993dadf6cca8" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Amsterdamse Poort</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 3/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10pm - 6pm             </div>         </div>`)[0];
-                popup_bf31df2d5bd3dcd748fbbd0e48406492.setContent(html_4a81727acd63f579389e993dadf6cca8);
-            
-        
-
-        circle_marker_72939298051c465113be62c252b29aa2.bindPopup(popup_bf31df2d5bd3dcd748fbbd0e48406492)
-        ;
-
-        
-    
-    
-            circle_marker_72939298051c465113be62c252b29aa2.bindTooltip(
-                `<div>
-                     Amsterdamse Poort
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_fedcfeabbabd42d6811b6e60dd667ab1 = L.circleMarker(
-                [52.386, 4.6317],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 11, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_c43a697f0c2713f748039fd1176c490f = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_de486009620970c88c919c3184ccec4d = $(`<div id="html_de486009620970c88c919c3184ccec4d" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Kenaupark</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 5/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 10am - 8pm             </div>         </div>`)[0];
-                popup_c43a697f0c2713f748039fd1176c490f.setContent(html_de486009620970c88c919c3184ccec4d);
-            
-        
-
-        circle_marker_fedcfeabbabd42d6811b6e60dd667ab1.bindPopup(popup_c43a697f0c2713f748039fd1176c490f)
-        ;
-
-        
-    
-    
-            circle_marker_fedcfeabbabd42d6811b6e60dd667ab1.bindTooltip(
-                `<div>
-                     Kenaupark
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_51783fa676f01de1679835db5e9dae7d = L.circleMarker(
-                [52.3818, 4.6343],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_8e6c4aa00baaa67378cbf85191a596bb = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_6027e5cbb844fb924cbaaf865b82b905 = $(`<div id="html_6027e5cbb844fb924cbaaf865b82b905" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Museum Haarlem</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 7am - 7pm             </div>         </div>`)[0];
-                popup_8e6c4aa00baaa67378cbf85191a596bb.setContent(html_6027e5cbb844fb924cbaaf865b82b905);
-            
-        
-
-        circle_marker_51783fa676f01de1679835db5e9dae7d.bindPopup(popup_8e6c4aa00baaa67378cbf85191a596bb)
-        ;
-
-        
-    
-    
-            circle_marker_51783fa676f01de1679835db5e9dae7d.bindTooltip(
-                `<div>
-                     Museum Haarlem
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_bd14f5340058a0bdaf4aeff1489db173 = L.circleMarker(
-                [52.3804, 4.6312],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_dde1166424226ab8984c8a35d1b903fc = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_b914b11f2bd8ae6b27a0aa58ce1210cb = $(`<div id="html_b914b11f2bd8ae6b27a0aa58ce1210cb" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Patronaat</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 2/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 11am - 9pm             </div>         </div>`)[0];
-                popup_dde1166424226ab8984c8a35d1b903fc.setContent(html_b914b11f2bd8ae6b27a0aa58ce1210cb);
-            
-        
-
-        circle_marker_bd14f5340058a0bdaf4aeff1489db173.bindPopup(popup_dde1166424226ab8984c8a35d1b903fc)
-        ;
-
-        
-    
-    
-            circle_marker_bd14f5340058a0bdaf4aeff1489db173.bindTooltip(
-                `<div>
-                     Patronaat
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_9f2158d4e98abf91649ed80c381f2018 = L.circleMarker(
-                [52.3801, 4.6352],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_e462c6f67765a09b14f8706d5e016def = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_b524302b8212d9cf89d707f328d3b483 = $(`<div id="html_b524302b8212d9cf89d707f328d3b483" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Toneelschuur Theatre</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 9am - 6pm             </div>         </div>`)[0];
-                popup_e462c6f67765a09b14f8706d5e016def.setContent(html_b524302b8212d9cf89d707f328d3b483);
-            
-        
-
-        circle_marker_9f2158d4e98abf91649ed80c381f2018.bindPopup(popup_e462c6f67765a09b14f8706d5e016def)
-        ;
-
-        
-    
-    
-            circle_marker_9f2158d4e98abf91649ed80c381f2018.bindTooltip(
-                `<div>
-                     Toneelschuur Theatre
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_d1ce9417b02df24eaf17c41d56a93aa1 = L.circleMarker(
-                [52.3802, 4.6328],
-                {"bubblingMouseEvents": true, "color": "#9333ea", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#9333ea", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 7, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_53ed617fa8f077bda4b70fb3ed4735a0 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_1df4c17577bf7f5c50363d89f769b8bc = $(`<div id="html_1df4c17577bf7f5c50363d89f769b8bc" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:160px'>                 <b style='color:#9333ea'>Hofje van Bakenes</b><br>                 <span style='color:#6b7280;font-size:12px'>Haarlem</span><br>                 <hr style='margin:4px 0'>                 ⭐ Score: 1/5<br>                 🕐 Visit: 3 hrs<br>                 🕰 Hours: 8am - 8pm             </div>         </div>`)[0];
-                popup_53ed617fa8f077bda4b70fb3ed4735a0.setContent(html_1df4c17577bf7f5c50363d89f769b8bc);
-            
-        
-
-        circle_marker_d1ce9417b02df24eaf17c41d56a93aa1.bindPopup(popup_53ed617fa8f077bda4b70fb3ed4735a0)
-        ;
-
-        
-    
-    
-            circle_marker_d1ce9417b02df24eaf17c41d56a93aa1.bindTooltip(
-                `<div>
-                     Hofje van Bakenes
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var poly_line_7b30c735b5cb515f319dbc6d88d96503 = L.polyline(
-                [[52.375, 4.8827], [52.375218, 4.883977], [52.358906, 4.881975], [52.375, 4.8827]],
-                {"bubblingMouseEvents": true, "color": "#ef4444", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#ef4444", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 2.5}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            poly_line_7b30c735b5cb515f319dbc6d88d96503.bindTooltip(
-                `<div>
-                     Day 1 route
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var poly_line_2d628aec7756efa27226a5b04e0501df = L.polyline(
-                [[52.375, 4.8827], [52.357994, 4.891529], [52.375, 4.8827]],
-                {"bubblingMouseEvents": true, "color": "#f97316", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#f97316", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 2.5}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            poly_line_2d628aec7756efa27226a5b04e0501df.bindTooltip(
-                `<div>
-                     Day 2 route
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var poly_line_1062f3fa38bf2c55ef34363d4c6116d7 = L.polyline(
-                [[52.375, 4.8827], [52.358416, 4.881076], [52.37187, 4.88919], [52.375, 4.8827]],
-                {"bubblingMouseEvents": true, "color": "#eab308", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#eab308", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 2.5}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            poly_line_1062f3fa38bf2c55ef34363d4c6116d7.bindTooltip(
-                `<div>
-                     Day 3 route
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var poly_line_b6707c78fd36edca20500fea18883b8b = L.polyline(
-                [[52.375, 4.8827], [52.373154, 4.892226], [52.365726, 4.891205], [52.375, 4.8827]],
-                {"bubblingMouseEvents": true, "color": "#22c55e", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#22c55e", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 2.5}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            poly_line_b6707c78fd36edca20500fea18883b8b.bindTooltip(
-                `<div>
-                     Day 4 route
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var poly_line_664bc974ca6b24e65fa364391db74b4c = L.polyline(
-                [[52.375, 4.8827], [52.373189, 4.89107], [52.369377, 4.901599], [52.375, 4.8827]],
-                {"bubblingMouseEvents": true, "color": "#8b5cf6", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "#8b5cf6", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 2.5}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            poly_line_664bc974ca6b24e65fa364391db74b4c.bindTooltip(
-                `<div>
-                     Day 5 route
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var marker_4eebbb44fe5e7cf7b0d1f5b3698b12b1 = L.marker(
-                [52.375, 4.8827],
-                {
-}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-            var icon_0609508896ea605ae0fe23e1d39c94d2 = L.AwesomeMarkers.icon(
-                {
-  "markerColor": "black",
-  "iconColor": "white",
-  "icon": "home",
-  "prefix": "fa",
-  "extraClasses": "fa-rotate-0",
-}
-            );
-        
-    
-        var popup_ee3805702938eff25bd1bff6f0ffabff = L.popup({
-  "maxWidth": "100%",
-});
-
-        
-            
-                var html_b6c02a6a803d0b3f2c353a676d397e23 = $(`<div id="html_b6c02a6a803d0b3f2c353a676d397e23" style="width: 100.0%; height: 100.0%;"><b>🏠 Airbnb Base</b><br>Starting point each day</div>`)[0];
-                popup_ee3805702938eff25bd1bff6f0ffabff.setContent(html_b6c02a6a803d0b3f2c353a676d397e23);
-            
-        
-
-        marker_4eebbb44fe5e7cf7b0d1f5b3698b12b1.bindPopup(popup_ee3805702938eff25bd1bff6f0ffabff)
-        ;
-
-        
-    
-    
-            marker_4eebbb44fe5e7cf7b0d1f5b3698b12b1.bindTooltip(
-                `<div>
-                     Airbnb
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-                marker_4eebbb44fe5e7cf7b0d1f5b3698b12b1.setIcon(icon_0609508896ea605ae0fe23e1d39c94d2);
-            
-    
-            var circle_marker_2a33089a6490b8973092fad9d089989a = L.circleMarker(
-                [52.38172, 4.8831],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_885838bba29d3e48e11a151d314d5cdc = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_e09dc65b4fa19e9b76669aaf5bd960b8 = $(`<div id="html_e09dc65b4fa19e9b76669aaf5bd960b8" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Central,Rooftop 360',Zen,Canal-View...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.9/10<br>                 👤 Host: 4.9/10<br>                 👥 Capacity: 1 pax<br>                 📅 Min stay: 7 nights             </div>         </div>`)[0];
-                popup_885838bba29d3e48e11a151d314d5cdc.setContent(html_e09dc65b4fa19e9b76669aaf5bd960b8);
-            
-        
-
-        circle_marker_2a33089a6490b8973092fad9d089989a.bindPopup(popup_885838bba29d3e48e11a151d314d5cdc)
-        ;
-
-        
-    
-    
-            circle_marker_2a33089a6490b8973092fad9d089989a.bindTooltip(
-                `<div>
-                     🏨 Central,Rooftop 360',Zen,...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_1a78460dc7c3cc4b1ff3f1e3f91c2d36 = L.circleMarker(
-                [52.38028, 4.89089],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_1468b1b4176e95dfa592451a95154033 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_386284cac9c72f23f9240a4fc73a9497 = $(`<div id="html_386284cac9c72f23f9240a4fc73a9497" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Multatuli Luxury Guest Suite in top...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.8/10<br>                 👤 Host: 6.4/10<br>                 👥 Capacity: 2 pax<br>                 📅 Min stay: 3 nights             </div>         </div>`)[0];
-                popup_1468b1b4176e95dfa592451a95154033.setContent(html_386284cac9c72f23f9240a4fc73a9497);
-            
-        
-
-        circle_marker_1a78460dc7c3cc4b1ff3f1e3f91c2d36.bindPopup(popup_1468b1b4176e95dfa592451a95154033)
-        ;
-
-        
-    
-    
-            circle_marker_1a78460dc7c3cc4b1ff3f1e3f91c2d36.bindTooltip(
-                `<div>
-                     🏨 Multatuli Luxury Guest Su...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_6436495294a5670dcda1b120e5b66832 = L.circleMarker(
-                [52.37956, 4.89359],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_7bb1e605c4210d265aa977d701b2b61d = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_19631712ef0a4d104ab27c4840f3ef42 = $(`<div id="html_19631712ef0a4d104ab27c4840f3ef42" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 SUPERLOCATED Room in  CANALHOUSE, P...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.8/10<br>                 👤 Host: 1.5/10<br>                 👥 Capacity: 1 pax<br>                 📅 Min stay: 2 nights             </div>         </div>`)[0];
-                popup_7bb1e605c4210d265aa977d701b2b61d.setContent(html_19631712ef0a4d104ab27c4840f3ef42);
-            
-        
-
-        circle_marker_6436495294a5670dcda1b120e5b66832.bindPopup(popup_7bb1e605c4210d265aa977d701b2b61d)
-        ;
-
-        
-    
-    
-            circle_marker_6436495294a5670dcda1b120e5b66832.bindTooltip(
-                `<div>
-                     🏨 SUPERLOCATED Room in  CAN...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_b877655bec0a62b97969cda824814d44 = L.circleMarker(
-                [52.35165, 4.84653],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_ef7ee99aa59423af98571ccc478657c1 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_35d5358410ba75bb0deab2bc3fb2ad77 = $(`<div id="html_35d5358410ba75bb0deab2bc3fb2ad77" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Amsterdam Apartment (waterview)...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.8/10<br>                 👤 Host: 8.4/10<br>                 👥 Capacity: 4 pax<br>                 📅 Min stay: 2 nights             </div>         </div>`)[0];
-                popup_ef7ee99aa59423af98571ccc478657c1.setContent(html_35d5358410ba75bb0deab2bc3fb2ad77);
-            
-        
-
-        circle_marker_b877655bec0a62b97969cda824814d44.bindPopup(popup_ef7ee99aa59423af98571ccc478657c1)
-        ;
-
-        
-    
-    
-            circle_marker_b877655bec0a62b97969cda824814d44.bindTooltip(
-                `<div>
-                     🏨 Amsterdam Apartment (wate...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_ff4a29316c88e475d6b84234d66ad193 = L.circleMarker(
-                [52.36509, 4.89354],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_65c3088103d64beed93313b0eeba4421 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_bdea0f2e870900d7dc9d36fb9370904e = $(`<div id="html_bdea0f2e870900d7dc9d36fb9370904e" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Studio with private bathroom in the...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.5/10<br>                 👤 Host: 8.9/10<br>                 👥 Capacity: 2 pax<br>                 📅 Min stay: 1 nights             </div>         </div>`)[0];
-                popup_65c3088103d64beed93313b0eeba4421.setContent(html_bdea0f2e870900d7dc9d36fb9370904e);
-            
-        
-
-        circle_marker_ff4a29316c88e475d6b84234d66ad193.bindPopup(popup_65c3088103d64beed93313b0eeba4421)
-        ;
-
-        
-    
-    
-            circle_marker_ff4a29316c88e475d6b84234d66ad193.bindTooltip(
-                `<div>
-                     🏨 Studio with private bathr...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_963933fc326de212448c4234a4d6bc0d = L.circleMarker(
-                [52.36445, 4.93124],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_d79f291180f0e3525c6bcf65605f9a88 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_27c09a63c29a2111ce89f0d6c1da8775 = $(`<div id="html_27c09a63c29a2111ce89f0d6c1da8775" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Charming, beautifully & sunny place...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.5/10<br>                 👤 Host: 9.0/10<br>                 👥 Capacity: 1 pax<br>                 📅 Min stay: 2 nights             </div>         </div>`)[0];
-                popup_d79f291180f0e3525c6bcf65605f9a88.setContent(html_27c09a63c29a2111ce89f0d6c1da8775);
-            
-        
-
-        circle_marker_963933fc326de212448c4234a4d6bc0d.bindPopup(popup_d79f291180f0e3525c6bcf65605f9a88)
-        ;
-
-        
-    
-    
-            circle_marker_963933fc326de212448c4234a4d6bc0d.bindTooltip(
-                `<div>
-                     🏨 Charming, beautifully & s...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_70966fd876d471e65b98d7c266de43a6 = L.circleMarker(
-                [52.36551, 4.92848],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_0525f5e9e5589ee8470cda03fef78f60 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_e4b601b3e06c2ac208149a321a1391f5 = $(`<div id="html_e4b601b3e06c2ac208149a321a1391f5" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Cottage Room- Completely Private...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.5/10<br>                 👤 Host: 3.0/10<br>                 👥 Capacity: 2 pax<br>                 📅 Min stay: 3 nights             </div>         </div>`)[0];
-                popup_0525f5e9e5589ee8470cda03fef78f60.setContent(html_e4b601b3e06c2ac208149a321a1391f5);
-            
-        
-
-        circle_marker_70966fd876d471e65b98d7c266de43a6.bindPopup(popup_0525f5e9e5589ee8470cda03fef78f60)
-        ;
-
-        
-    
-    
-            circle_marker_70966fd876d471e65b98d7c266de43a6.bindTooltip(
-                `<div>
-                     🏨 Cottage Room- Completely ...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_7621018c1d776030afcee8ca6495537a = L.circleMarker(
-                [52.37876, 4.89264],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_0a0fc28e3c872e5a4f074b287b5571d1 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_b5e7a3560ba46784d6ed0a18129cec58 = $(`<div id="html_b5e7a3560ba46784d6ed0a18129cec58" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 TOP LOCATED Canalhouse B&B Jordaan...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.5/10<br>                 👤 Host: 8.6/10<br>                 👥 Capacity: 3 pax<br>                 📅 Min stay: 2 nights             </div>         </div>`)[0];
-                popup_0a0fc28e3c872e5a4f074b287b5571d1.setContent(html_b5e7a3560ba46784d6ed0a18129cec58);
-            
-        
-
-        circle_marker_7621018c1d776030afcee8ca6495537a.bindPopup(popup_0a0fc28e3c872e5a4f074b287b5571d1)
-        ;
-
-        
-    
-    
-            circle_marker_7621018c1d776030afcee8ca6495537a.bindTooltip(
-                `<div>
-                     🏨 TOP LOCATED Canalhouse B&...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_7b4091a8e87ffe16ca9aa5ed808caf48 = L.circleMarker(
-                [52.35517, 4.88969],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_7ed4cf967556cbb1ac2721bc8cf3158e = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_74c5317d1467f2e04a2725b8164d26c0 = $(`<div id="html_74c5317d1467f2e04a2725b8164d26c0" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 Large private room for rent Center ...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.5/10<br>                 👤 Host: 9.0/10<br>                 👥 Capacity: 5 pax<br>                 📅 Min stay: 2 nights             </div>         </div>`)[0];
-                popup_7ed4cf967556cbb1ac2721bc8cf3158e.setContent(html_74c5317d1467f2e04a2725b8164d26c0);
-            
-        
-
-        circle_marker_7b4091a8e87ffe16ca9aa5ed808caf48.bindPopup(popup_7ed4cf967556cbb1ac2721bc8cf3158e)
-        ;
-
-        
-    
-    
-            circle_marker_7b4091a8e87ffe16ca9aa5ed808caf48.bindTooltip(
-                `<div>
-                     🏨 Large private room for re...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
-    
-            var circle_marker_1add039512fb37ab787173406f823a68 = L.circleMarker(
-                [52.34472, 4.88613],
-                {"bubblingMouseEvents": true, "color": "#f59e0b", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#f59e0b", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 5, "stroke": true, "weight": 3}
-            ).addTo(map_973f6f491dfecf0d3ad7c1b4fbc4eb09);
-        
-    
-        var popup_a3fbcbe7d9231354731b55634ede51e5 = L.popup({
-  "maxWidth": 200,
-});
-
-        
-            
-                var html_2e026c6f32a9aa00bf49d348e31441e5 = $(`<div id="html_2e026c6f32a9aa00bf49d348e31441e5" style="width: 100.0%; height: 100.0%;">             <div style='font-family:sans-serif;width:170px'>                 <b>🏨 bed & bike with free parking  the h...</b><br>                 <hr style='margin:4px 0'>                 ⭐ Rating: 9.5/10<br>                 👤 Host: 4.3/10<br>                 👥 Capacity: 8 pax<br>                 📅 Min stay: 2 nights             </div>         </div>`)[0];
-                popup_a3fbcbe7d9231354731b55634ede51e5.setContent(html_2e026c6f32a9aa00bf49d348e31441e5);
-            
-        
-
-        circle_marker_1add039512fb37ab787173406f823a68.bindPopup(popup_a3fbcbe7d9231354731b55634ede51e5)
-        ;
-
-        
-    
-    
-            circle_marker_1add039512fb37ab787173406f823a68.bindTooltip(
-                `<div>
-                     🏨 bed & bike with free park...
-                 </div>`,
-                {
-  "sticky": true,
-}
-            );
-        
+const ATTRACTIONS=[{id:0,name:"Rijksmuseum",score:1,visit:3,lat:52.3600,lng:4.8852,hours:"10am-10pm",open:10,close:22},{id:1,name:"Van Gogh Museum",score:4,visit:3,lat:52.3584,lng:4.8811,hours:"9am-9pm",open:9,close:21},{id:2,name:"Anne Frank House",score:5,visit:3,lat:52.3752,lng:4.8840,hours:"10am-6pm",open:10,close:18},{id:3,name:"Vondelpark",score:1,visit:3,lat:52.3584,lng:4.8684,hours:"8am-8pm",open:8,close:20},{id:4,name:"Dam Square",score:4,visit:3,lat:52.3732,lng:4.8922,hours:"9am-5pm",open:9,close:17},{id:5,name:"Royal Palace",score:3,visit:3,lat:52.3732,lng:4.8911,hours:"10am-10pm",open:10,close:22},{id:6,name:"Heineken Experience",score:2,visit:3,lat:52.3580,lng:4.8915,hours:"8am-8pm",open:8,close:20},{id:7,name:"Rembrandt Museum",score:1,visit:3,lat:52.3694,lng:4.9016,hours:"7am-7pm",open:7,close:19},{id:8,name:"NEMO Science Museum",score:1,visit:3,lat:52.3740,lng:4.9120,hours:"9am-6pm",open:9,close:18},{id:9,name:"ARTIS Zoo",score:5,visit:3,lat:52.3668,lng:4.9147,hours:"9am-6pm",open:9,close:18},{id:10,name:"A'DAM Lookout",score:3,visit:3,lat:52.3842,lng:4.9004,hours:"10am-8pm",open:10,close:20},{id:11,name:"Amsterdam Museum",score:3,visit:3,lat:52.3719,lng:4.8892,hours:"7am-7pm",open:7,close:19},{id:12,name:"Bloemenmarkt",score:4,visit:3,lat:52.3657,lng:4.8912,hours:"11am-9pm",open:11,close:21},{id:13,name:"Moco Museum",score:3,visit:3,lat:52.3589,lng:4.8820,hours:"9am-6pm",open:9,close:18},{id:14,name:"Eye Filmmuseum",score:1,visit:3,lat:52.3848,lng:4.9010,hours:"8am-8pm",open:8,close:20}];
+const ACCOMMODATIONS=[{name:"Studio with private bathroom in the centre 1",capacity:2,minstay:1,ab_rating:9.5,host_rating:8.9,lat:52.36509,lng:4.89354},{name:"Multatuli Luxury Guest Suite in top location",capacity:2,minstay:3,ab_rating:9.8,host_rating:6.4,lat:52.38028,lng:4.89089},{name:"TOP LOCATED Canalhouse B&B Jordaan",capacity:3,minstay:2,ab_rating:9.5,host_rating:8.6,lat:52.37876,lng:4.89264},{name:"Large private room for rent Center / De Pijp",capacity:5,minstay:2,ab_rating:9.5,host_rating:9.0,lat:52.35517,lng:4.88969},{name:"Comfortable room@PERFECT location + 2 bikes",capacity:2,minstay:3,ab_rating:9.3,host_rating:3.9,lat:52.36781,lng:4.89001},{name:"Oasis in the middle of Amsterdam",capacity:3,minstay:3,ab_rating:8.6,host_rating:1.6,lat:52.37537,lng:4.88932},{name:"Bright apt in central Amsterdam",capacity:3,minstay:3,ab_rating:8.8,host_rating:8.2,lat:52.37307,lng:4.89343},{name:"Spacious apartment next to center",capacity:3,minstay:3,ab_rating:9.4,host_rating:6.7,lat:52.36916,lng:4.86643},{name:"En Suite accommodation in a monumental canal house",capacity:2,minstay:3,ab_rating:8.4,host_rating:8.9,lat:52.36916,lng:4.88445},{name:"Nice room near centre with en suite bath",capacity:2,minstay:3,ab_rating:7.5,host_rating:9.7,lat:52.38905,lng:4.88559},{name:"Romantic stylish B&B houseboat in canal district",capacity:1,minstay:2,ab_rating:8.5,host_rating:5.3,lat:52.38761,lng:4.89188},{name:"Centre Museum Quarter Apt Roof Deck",capacity:2,minstay:5,ab_rating:9.0,host_rating:3.2,lat:52.35935,lng:4.87672},{name:"bed & bike with free parking",capacity:8,minstay:2,ab_rating:9.5,host_rating:4.3,lat:52.34472,lng:4.88613},{name:"all private art @ home in city center",capacity:2,minstay:4,ab_rating:8.6,host_rating:9.9,lat:52.36571,lng:4.88464},{name:"B28 Unique Houseboat Herengracht",capacity:4,minstay:3,ab_rating:7.6,host_rating:8.2,lat:52.37894,lng:4.8906}];
+const DAY_COLORS=['#c0392b','#2c5f8a','#2d6a4f','#7b4f9e','#c07820'];
+const AIRBNB_LAT=52.3740,AIRBNB_LNG=4.8900;
+let selected=new Set([0,1,2,4,5,6,9,12]);
+let mustVisit=new Set([2,9]);
+let map,markers=[],routeLayers=[];
+
+function init(){renderAttrGrid();initMap();initDrag();document.getElementById('dailyHours').addEventListener('input',e=>{document.getElementById('hoursVal').textContent=e.target.value+'h';});}
+
+function renderAttrGrid(){const grid=document.getElementById('attrGrid');grid.innerHTML='';ATTRACTIONS.forEach(a=>{const isSel=selected.has(a.id);const isMust=mustVisit.has(a.id);const div=document.createElement('div');div.className='attr-card'+(isSel?' selected':'')+(isMust?' must':'');div.innerHTML=`${isMust?'<span class="must-tag">★ Must</span>':(isSel?'<span class="sel-tag">✓</span>':'')}<div class="attr-name">${a.name}</div><div class="attr-meta"><span class="score-pip">${[1,2,3,4,5].map(i=>`<span class="pip${i<=a.score?' on':''}"></span>`).join('')}</span><span>${a.hours}</span></div>`;div.addEventListener('click',()=>toggleAttr(a.id));div.addEventListener('dblclick',e=>{e.preventDefault();toggleMust(a.id);});grid.appendChild(div);});}
+
+function toggleAttr(id){if(selected.has(id)){selected.delete(id);mustVisit.delete(id);}else selected.add(id);renderAttrGrid();}
+function toggleMust(id){selected.add(id);if(mustVisit.has(id))mustVisit.delete(id);else mustVisit.add(id);renderAttrGrid();}
+function selectAll(){ATTRACTIONS.forEach(a=>selected.add(a.id));renderAttrGrid();}
+function clearAll(){selected.clear();mustVisit.clear();renderAttrGrid();}
+
+function initMap(){map=L.map('map',{zoomControl:true}).setView([52.372,4.895],13);L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(map);plotAllAttractions();}
+
+function plotAllAttractions(){markers.forEach(m=>map.removeLayer(m));markers=[];ATTRACTIONS.forEach(a=>{const c=a.score>=4?'#c0392b':a.score>=2?'#2c5f8a':'#9c9088';const m=L.circleMarker([a.lat,a.lng],{radius:5+a.score,color:c,fillColor:c,fillOpacity:0.7,weight:1.5}).addTo(map);m.bindTooltip(`<b>${a.name}</b><br>Score: ${a.score}/5 · ${a.hours}`);markers.push(m);});const homeIcon=L.divIcon({html:'<div style="background:#1a1714;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;border:2px solid white">⌂</div>',iconSize:[20,20],iconAnchor:[10,10]});L.marker([AIRBNB_LAT,AIRBNB_LNG],{icon:homeIcon}).addTo(map).bindTooltip('<b>Airbnb Base</b><br>Starting point each day');}
+
+function haversine(lat1,lng1,lat2,lng2){const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function travelTime(lat1,lng1,lat2,lng2){return haversine(lat1,lng1,lat2,lng2)/30;}
+
+function runOptimiser(){
+  const selArr=ATTRACTIONS.filter(a=>selected.has(a.id));
+  if(selArr.length===0){alert('Please select at least one attraction.');return;}
+  const days=parseInt(document.getElementById('numDays').value);
+  const dailyHours=parseInt(document.getElementById('dailyHours').value);
+  const pax=parseInt(document.getElementById('pax').value);
+  const minRating=parseFloat(document.getElementById('minRating').value);
+  const minHost=parseFloat(document.getElementById('minHost').value);
+  const maxDist=parseFloat(document.getElementById('maxDist').value);
+  const sorted=[...selArr].sort((a,b)=>{const aS=mustVisit.has(a.id)?100+a.score:a.score;const bS=mustVisit.has(b.id)?100+b.score:b.score;return bS-aS;});
+  const itinerary=Array.from({length:days},()=>[]);
+  const dayTime=Array(days).fill(0);
+  const visited=new Set();
+  for(const attr of sorted){
+    if(visited.has(attr.id))continue;
+    let bestDay=-1,bestTime=Infinity;
+    for(let d=0;d<days;d++){
+      const lastAttr=itinerary[d].length>0?itinerary[d][itinerary[d].length-1]:null;
+      const fromLat=lastAttr?lastAttr.lat:AIRBNB_LAT;
+      const fromLng=lastAttr?lastAttr.lng:AIRBNB_LNG;
+      const travel=travelTime(fromLat,fromLng,attr.lat,attr.lng);
+      const returnTravel=travelTime(attr.lat,attr.lng,AIRBNB_LAT,AIRBNB_LNG);
+      const totalNeeded=dayTime[d]+travel+attr.visit+returnTravel;
+      if(totalNeeded<=dailyHours){const remaining=dailyHours-totalNeeded;if(bestDay===-1||remaining<bestTime){bestDay=d;bestTime=remaining;}}
+    }
+    if(bestDay>=0){
+      const lastAttr=itinerary[bestDay].length>0?itinerary[bestDay][itinerary[bestDay].length-1]:null;
+      const fromLat=lastAttr?lastAttr.lat:AIRBNB_LAT;
+      const fromLng=lastAttr?lastAttr.lng:AIRBNB_LNG;
+      const travel=travelTime(fromLat,fromLng,attr.lat,attr.lng);
+      dayTime[bestDay]+=travel+attr.visit;
+      itinerary[bestDay].push(attr);
+      visited.add(attr.id);
+    }
+  }
+  const optimised=itinerary.map(dayAttrs=>{
+    if(dayAttrs.length<=1)return dayAttrs;
+    const remaining=[...dayAttrs];const ordered=[];
+    let curLat=AIRBNB_LAT,curLng=AIRBNB_LNG;
+    while(remaining.length>0){let ni=0,nd=Infinity;remaining.forEach((a,i)=>{const d=haversine(curLat,curLng,a.lat,a.lng);if(d<nd){nd=d;ni=i;}});const next=remaining.splice(ni,1)[0];ordered.push(next);curLat=next.lat;curLng=next.lng;}
+    return ordered;
+  });
+  const accResult=optimiseAccommodation(pax,days,minRating,minHost,maxDist,optimised);
+  renderResults(optimised,accResult,days,dailyHours);
+  renderMapRoutes(optimised,accResult);
+}
+
+function optimiseAccommodation(pax,nights,minRating,minHost,maxDist,itinerary){
+  const allAttrs=itinerary.flat();
+  const criteriaOrder=getCriteriaOrder();
+  const candidates=ACCOMMODATIONS.filter(a=>{
+    const capOk=a.capacity>=pax;const stayOk=nights>=a.minstay;
+    const ratingOk=a.ab_rating>=minRating;const hostOk=a.host_rating>=minHost;
+    let distOk=true;
+    if(allAttrs.length>0){const avgLat=allAttrs.reduce((s,x)=>s+x.lat,0)/allAttrs.length;const avgLng=allAttrs.reduce((s,x)=>s+x.lng,0)/allAttrs.length;distOk=haversine(a.lat,a.lng,avgLat,avgLng)<=maxDist;}
+    return capOk&&stayOk&&ratingOk&&hostOk&&distOk;
+  });
+  if(candidates.length===0)return null;
+  const avgLat=allAttrs.length>0?allAttrs.reduce((s,x)=>s+x.lat,0)/allAttrs.length:AIRBNB_LAT;
+  const avgLng=allAttrs.length>0?allAttrs.reduce((s,x)=>s+x.lng,0)/allAttrs.length:AIRBNB_LNG;
+  const scored=candidates.map(a=>{
+    let score=0;const dist=haversine(a.lat,a.lng,avgLat,avgLng);
+    criteriaOrder.forEach((crit,rank)=>{const weight=5-rank;
+      if(crit==='rating')score+=weight*(a.ab_rating/10);
+      else if(crit==='host')score+=weight*(a.host_rating/10);
+      else if(crit==='distance')score+=weight*Math.max(0,1-dist/maxDist);
+      else if(crit==='capacity')score+=weight*Math.min(1,a.capacity/4);
+      else if(crit==='minstay')score+=weight*(nights>=a.minstay?1:0);
+    });
+    return{...a,_score:score,_dist:dist};
+  });
+  return scored.sort((a,b)=>b._score-a._score)[0];
+}
+
+function getCriteriaOrder(){return Array.from(document.querySelectorAll('#criteriaList .crit-item')).map(i=>i.dataset.crit);}
+
+function renderResults(itinerary,accResult,days,dailyHours){
+  const totalScore=itinerary.flat().reduce((s,a)=>s+(mustVisit.has(a.id)?5:a.score),0);
+  const totalAttr=itinerary.flat().length;
+  const maxScore=totalAttr*5;
+  let html=`<div class="results"><div class="results-header">Your Optimised Amsterdam Trip</div><div style="font-size:13px;color:var(--text2);margin-bottom:14px">${days} day${days>1?'s':''} · ${dailyHours}h daily · ${totalAttr} attractions</div><div class="score-row"><div class="score-chip"><div class="n">${totalScore}</div><div class="l">Satisfaction Score</div></div><div class="score-chip"><div class="n">${totalAttr}</div><div class="l">Attractions</div></div><div class="score-chip"><div class="n">${Math.round(totalScore/Math.max(maxScore,1)*100)}%</div><div class="l">Optimality</div></div></div>`;
+  itinerary.forEach((dayAttrs,d)=>{
+    if(dayAttrs.length===0){html+=`<div class="day-section"><div class="day-header"><div class="day-dot" style="background:${DAY_COLORS[d]}">${d+1}</div><div class="day-title">Day ${d+1} — No attractions scheduled</div></div></div>`;return;}
+    let timeNow=9.0;const fromHome=travelTime(AIRBNB_LAT,AIRBNB_LNG,dayAttrs[0].lat,dayAttrs[0].lng);timeNow+=fromHome;
+    html+=`<div class="day-section"><div class="day-header"><div class="day-dot" style="background:${DAY_COLORS[d]}">${d+1}</div><div class="day-title">Day ${d+1} — ${dayAttrs.length} attraction${dayAttrs.length>1?'s':''}</div></div><div class="timeline"><div class="timeline-item home"><div class="tl-time">09:00</div><div class="tl-name">🏠 Depart from Airbnb</div><div class="tl-meta"><span>Travel: ${Math.round(fromHome*60)} mins to first stop</span></div></div>`;
+    dayAttrs.forEach((a,i)=>{
+      const arrH=Math.floor(timeNow),arrM=Math.round((timeNow%1)*60);
+      const endTime=timeNow+a.visit;const endH=Math.floor(endTime),endM=Math.round((endTime%1)*60);
+      const isMust=mustVisit.has(a.id);
+      html+=`<div class="timeline-item visit"><div class="tl-time">${String(arrH).padStart(2,'0')}:${String(arrM).padStart(2,'0')} – ${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}</div><div class="tl-name">${a.name}${isMust?' <span class="tl-badge badge-must">★ Must-visit</span>':''}</div><div class="tl-meta"><span>⭐ ${isMust?5:a.score}/5</span><span>🕐 ${a.visit}h visit</span><span>🕰 ${a.hours}</span></div></div>`;
+      timeNow=endTime;
+      if(i<dayAttrs.length-1){timeNow+=travelTime(a.lat,a.lng,dayAttrs[i+1].lat,dayAttrs[i+1].lng);}
+    });
+    const retTime=travelTime(dayAttrs[dayAttrs.length-1].lat,dayAttrs[dayAttrs.length-1].lng,AIRBNB_LAT,AIRBNB_LNG);
+    timeNow+=retTime;const retH=Math.floor(timeNow),retM=Math.round((timeNow%1)*60);
+    html+=`<div class="timeline-item home"><div class="tl-time">${String(retH).padStart(2,'0')}:${String(retM).padStart(2,'0')}</div><div class="tl-name">🏠 Return to Airbnb</div></div></div></div>`;
+  });
+  if(accResult){
+    html+=`<div class="acc-result"><div class="acc-result-title">🏨 Recommended Accommodation</div><div class="acc-name">${accResult.name}</div><div class="acc-criteria-row"><span class="crit-badge crit-ok">✓ Rating ${accResult.ab_rating}/10</span><span class="crit-badge crit-ok">✓ Host ${accResult.host_rating}/10</span><span class="crit-badge crit-ok">✓ Capacity ${accResult.capacity} pax</span><span class="crit-badge crit-ok">✓ ${Math.round(accResult._dist*100)/100}km away</span></div><div class="acc-stats"><span>Min stay: ${accResult.minstay} nights</span><span>Satisfaction score: ${Math.round(accResult._score*10)/10}</span></div></div>`;
+  }else{
+    html+=`<div class="acc-result" style="border-color:#f5c6cb;background:#fff5f5"><div class="acc-result-title" style="color:var(--accent)">No accommodation found</div><div style="font-size:13px;color:var(--text2)">Try relaxing your rating or distance requirements.</div></div>`;
+  }
+  html+='</div>';
+  document.getElementById('resultsArea').innerHTML=html;
+}
+
+function renderMapRoutes(itinerary,accResult){
+  routeLayers.forEach(l=>map.removeLayer(l));routeLayers=[];plotAllAttractions();
+  const bounds=[[AIRBNB_LAT,AIRBNB_LNG]];
+  itinerary.forEach((dayAttrs,d)=>{
+    if(dayAttrs.length===0)return;
+    const color=DAY_COLORS[d];
+    const coords=[[AIRBNB_LAT,AIRBNB_LNG],...dayAttrs.map(a=>[a.lat,a.lng]),[AIRBNB_LAT,AIRBNB_LNG]];
+    const line=L.polyline(coords,{color,weight:3,opacity:0.85}).addTo(map);routeLayers.push(line);
+    coords.forEach(c=>bounds.push(c));
+    dayAttrs.forEach((a,i)=>{
+      const icon=L.divIcon({html:`<div style="background:${color};color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)">${d+1}.${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]});
+      const m=L.marker([a.lat,a.lng],{icon}).addTo(map);
+      m.bindTooltip(`<b>Day ${d+1} · Stop ${i+1}</b><br>${a.name}`);routeLayers.push(m);
+    });
+  });
+  if(accResult){
+    const icon=L.divIcon({html:'<div style="background:#b8860b;color:white;border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;border:1px solid white;white-space:nowrap">🏨 Rec.</div>',iconSize:[55,20],iconAnchor:[27,10]});
+    const m=L.marker([accResult.lat,accResult.lng],{icon}).addTo(map);
+    m.bindTooltip(`<b>${accResult.name}</b><br>Rating: ${accResult.ab_rating}/10`);routeLayers.push(m);
+    bounds.push([accResult.lat,accResult.lng]);
+  }
+  if(bounds.length>1)map.fitBounds(bounds,{padding:[40,40]});
+}
+
+function initDrag(){
+  const list=document.getElementById('criteriaList');let dragging=null;
+  list.querySelectorAll('.crit-item').forEach(item=>{
+    item.addEventListener('dragstart',()=>{dragging=item;item.style.opacity='0.5';});
+    item.addEventListener('dragend',()=>{item.style.opacity='';dragging=null;updateRanks();});
+    item.addEventListener('dragover',e=>{e.preventDefault();const rect=item.getBoundingClientRect();const mid=rect.top+rect.height/2;if(e.clientY<mid)list.insertBefore(dragging,item);else list.insertBefore(dragging,item.nextSibling);});
+  });
+}
+
+function updateRanks(){document.querySelectorAll('#criteriaList .crit-item').forEach((item,i)=>{item.querySelector('.crit-rank').textContent=i+1;});}
+
+init();
 </script>
+</body>
 </html>

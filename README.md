@@ -1,7 +1,6 @@
 # TripSync — Optimising Tourist Itineraries with MILP
 
 > **NTU BC2411 Prescriptive Analytics with Generative AI** · AY2024/25 Semester 2  
-> Team: Emmanuella Nicole, Felicia Nathania, Isabelle Lim, Nakeisha Leong, Eugene Koh
 
 ---
 
